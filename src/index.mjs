@@ -12,13 +12,24 @@ const csvDataSources = await Promise.all([
     CsvDataSource.create(join(__dirname, '..', 'data', 'balance_sheets.csv'), 'https://data.gov.lv/dati/dataset/8d31b878-536a-44aa-a013-8bc6b669d477/resource/d5fd17ef-d32e-40cb-8399-82b780095af0/download/income_statements.csv'),
     CsvDataSource.create(join(__dirname, '..', 'data', 'cash_flow_statements.csv'), 'https://data.gov.lv/dati/dataset/8d31b878-536a-44aa-a013-8bc6b669d477/resource/1a11fc29-ba7c-4e5a-8edc-7a28cea24988/download/cash_flow_statements.csv'),
     CsvDataSource.create(join(__dirname, '..', 'data', 'financial_statements.csv'), 'https://data.gov.lv/dati/dataset/8d31b878-536a-44aa-a013-8bc6b669d477/resource/27fcc5ec-c63b-4bfd-bb08-01f073a52d04/download/financial_statements.csv'),
-    CsvDataSource.create(join(__dirname, '..', 'data', 'income_statements.csv'), 'https://data.gov.lv/dati/dataset/8d31b878-536a-44aa-a013-8bc6b669d477/resource/d5fd17ef-d32e-40cb-8399-82b780095af0/download/income_statements.csv')
+    CsvDataSource.create(join(__dirname, '..', 'data', 'income_statements.csv'), 'https://data.gov.lv/dati/dataset/8d31b878-536a-44aa-a013-8bc6b669d477/resource/d5fd17ef-d32e-40cb-8399-82b780095af0/download/income_statements.csv'),
+    CsvDataSource.create(join(__dirname, '..', 'data', 'register.csv'), 'https://data.gov.lv/dati/dataset/4de9697f-850b-45ec-8bba-61fa09ce932f/resource/25e80bf3-f107-4ab4-89ef-251b5b9374e9/download/register.csv')
 ])
 
 let entities = new Map()
 let yearlyStatisticsIds = new Map()
 
 const startYear = 2020
+
+let register = new Map()
+await (async () => {
+    let registerCsvReader = new NaiveCsvReader(csvDataSources[4].path)
+    await registerCsvReader.read()
+    registerCsvReader.entries.forEach(entry => {
+        register.set(parseInt(entry.regcode), entry)
+    })
+})()
+
 
 let financialStatementCsvReader = new NaiveCsvReader(csvDataSources[2].path)
 await financialStatementCsvReader.read()
@@ -28,7 +39,11 @@ financialStatementCsvReader.entries.forEach(entry => {
         let registrationNumber = parseInt(entry.legal_entity_registration_number)
         let entity = entities.get(registrationNumber)
         if (!entity) {
-            entity = new Entity(registrationNumber)
+            const registerInfo = register.get(registrationNumber)
+            if (!registerInfo) {
+                console.error(`register info data not present for entity with registration number ${registrationNumber}`)
+            }
+            entity = new Entity(registrationNumber, registerInfo?.name ?? '')
             entities.set(registrationNumber, entity)
         }
         let entityYearylyStatistics = entity.statisticsForYear(year, entry.id)
@@ -49,7 +64,7 @@ let yearlyTops = new YearlyTops([
     { create: () => new LazyTop('Pēc peļņas', topLimit, 'netIncome') }, 
     { create: () => new LazyTop('Pēc peļņas/apgrozījuma attiecības', topLimit, 'netIncomeToTurnover', (metric) => isFinite(metric)) },
     { create: () => new LazyTop('Pēc apgrozījuma uz darbinieku', topLimit, 'netTurnoverPerEmployee', (metric) => isFinite(metric)) },
-    { create: () => new LazyTop('Pēc peļņas uz darbinieku', topLimit, 'netTncomePerEmployee', (metric) => isFinite(metric)) },
+    { create: () => new LazyTop('Pēc peļņas uz darbinieku', topLimit, 'netIncomePerEmployee', (metric) => isFinite(metric)) },
 ])
 
 let incomeStatementsCsvReader = new NaiveCsvReader(csvDataSources[3].path)

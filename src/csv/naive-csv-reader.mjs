@@ -19,10 +19,11 @@ export class NaiveCsvReader {
                 keys = values
             } else {
                 if (keys.length != values.length) {
-                    throw new Error(`csv value/column count mismatch (${values.length} vs ${keys.length}) in file ${this.path}, line ${lineIndex}`)
+                    console.error(`csv value/column count mismatch (${values.length} vs ${keys.length}) in file ${this.path}, line ${lineIndex}: ${line}`)
+                } else {
+                    const entry = Object.fromEntries(keys.map((key, index)=> [key, values[index]]))
+                    this._entries.push(entry)
                 }
-                const entry = Object.fromEntries(keys.map((key, index)=> [key, values[index]]))
-                this._entries.push(entry)
             }
             lineIndex++
         })

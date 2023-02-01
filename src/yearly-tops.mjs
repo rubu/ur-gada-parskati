@@ -15,13 +15,18 @@ export class YearlyTops {
     }
 
     print() {
-        for (const [year, tops] of this.tops.entries()) {
-            console.log(`${year}:`)
-            for (const top of tops) {
-                console.log(top.title)
-                for (const entry of top.entries) {
-                    console.log(`${entry.entry.legalRegistrationNumber} - ${entry.metric}`)
+        for (const year of Array.from(this.tops.keys()).sort()) {
+            const tops = this.tops.get(year)
+            if (tops) {
+                console.log(`${year}:`)
+                for (const top of tops) {
+                    console.log(top.title)
+                    for (const entry of top.entries) {
+                        console.log(`${entry.entry.name} (${entry.entry.legalRegistrationNumber}) - ${entry.metric} ${entry.entry.description()}`)
+                    }
                 }
+            } else {
+                throw new Error(`could not retrieve tops for year ${year} even though it should be present`)
             }
           } 
     }
