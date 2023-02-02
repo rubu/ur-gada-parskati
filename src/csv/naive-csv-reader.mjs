@@ -2,7 +2,7 @@ import { open } from 'node:fs/promises'
 import { once } from 'events'
 
 export class NaiveCsvReader {
-    constructor(path, options = { separator: ';'}) {
+    constructor(path, options = { separator: ';', smartSplit: true}) {
         this.path = path
         this.options = options
     }
@@ -14,8 +14,12 @@ export class NaiveCsvReader {
         let keys = []
         this._entries = []
         readLineInterface.on('line', (line) => {
-            let values = line.split(this.options.separator)
+            let values = this.options.smartSplit ? line.smartSplit(this.options.separator) : line.split(this.options.separator)
             if (lineIndex == 0) {
+                // skip empty lines until we get a header line
+                if (line.length == 0) {
+                    return
+                }
                 keys = values
             } else {
                 if (keys.length != values.length) {

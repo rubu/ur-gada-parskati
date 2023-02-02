@@ -32,3 +32,34 @@ export function insertAt(array, index, value, limit) {
     }
     array[index] = value
 }
+
+String.prototype.smartSplit = function(separator) {
+    let items = [], start = 0, end = undefined
+    let closeQuotes = false, isEscapedQuote = false
+    for (var index = 0; index < this.length; ++index) {
+        const character = this[index]
+        if (closeQuotes) {
+            if (character == '"' && isEscapedQuote == false) {
+                if (index < this.length - 1 && this[index+1] == '"') {
+                    isEscapedQuote = true
+                    continue
+                } else {
+                    end = index
+                    closeQuotes = false
+                }
+            }
+        } else {
+            if (character == '"') {
+                start = index + 1
+                closeQuotes = true
+            } else if (character == separator) {
+                items.push(this.substring(start, end ?? index))
+                start = index + 1
+                end = undefined
+            }
+        }
+        isEscapedQuote = false
+    }
+    items.push(this.substring(start))
+    return items
+}

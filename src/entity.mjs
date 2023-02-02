@@ -7,10 +7,10 @@ export class Entity {
         this.name = name
     }
 
-    statisticsForYear(id, year) {
+    statisticsForYear(year, id, create = true) {
         let entityYearlyStatistics = this.years.get(year)
-        if (!entityYearlyStatistics) {
-            entityYearlyStatistics = new EntityYearlyStatistics(id, year, this.legalRegistrationNumber, this.name)
+        if (!entityYearlyStatistics && create) {
+            entityYearlyStatistics = new EntityYearlyStatistics(year, id, this.legalRegistrationNumber, this.name)
             this.years.set(year, entityYearlyStatistics)
         }
         return entityYearlyStatistics
