@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert'
 
-import { binarySearch, insertAt } from '../src/utilities.mjs'
+import { binarySearch, insertAt, parseNumberWithSpaces } from '../src/utilities.mjs'
 
 test('binary search with result', () => {
     let array = [1, 2, 3, 4, 5, 6]
@@ -17,7 +17,7 @@ test('binary search without result', () => {
     assert.deepStrictEqual(result, {value: null, index: 1, result: -1})
     result = binarySearch(array, (value) => value - 6)
     assert.deepStrictEqual(result, {value: null, index: 3, result: 1})
-});
+})
 
 test('insert at position', () => {
     let array = [1, 3, 5]
@@ -34,5 +34,10 @@ test('insert at position', () => {
     assert.deepStrictEqual(array, [0,1,3,4])
     insertAt(array, 4, 5)
     assert.deepStrictEqual(array, [0,1,3,4,5])
-});
+})
+
+test('parse number with spaces', () => {
+    let result = parseNumberWithSpaces("3 799.23")
+    assert.strictEqual(result, 3799.23)
+})
   

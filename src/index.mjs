@@ -6,6 +6,8 @@ import { Entity } from './entity.mjs';
 import { LazyTop } from './lazy-top.mjs';
 import { YearlyTops } from './yearly-tops.mjs';
 import { open } from 'fs/promises'
+import { parseNumberWithSpaces } from './utilities.mjs'
+
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const csvDataSourceSet = new CsvDataSourceSet(join(__dirname, '..', 'data'), [
@@ -107,8 +109,8 @@ await (async () => {
             let statisticsForYear = entity.statisticsForYear(year, null, false)
             if (statisticsForYear) {
                 statisticsForYear.nace = entry['Pamatdarbības NACE kods']
-                statisticsForYear.socialTaxes = parseInt(entry['Tajā skaitā, VSAOI'])
-                statisticsForYear.incomeTaxes = parseInt(entry['Tajā skaitā, IIN'])
+                statisticsForYear.socialTaxes = parseNumberWithSpaces(entry['Tajā skaitā, VSAOI'])
+                statisticsForYear.incomeTaxes = parseNumberWithSpaces(entry['Tajā skaitā, IIN'])
                 if (statisticsForYear.employees) {
                     statisticsForYear.socialTaxesPerEmployee = statisticsForYear.socialTaxes / statisticsForYear.employees
                     statisticsForYear.incomeTaxesPerEmployee = statisticsForYear.incomeTaxes / statisticsForYear.employees

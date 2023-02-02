@@ -63,3 +63,7 @@ String.prototype.smartSplit = function(separator) {
     items.push(this.substring(start))
     return items
 }
+
+export function parseNumberWithSpaces(text) {
+    return parseFloat(text.split(/\s+/).join(''))
+}
