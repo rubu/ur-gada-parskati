@@ -67,7 +67,7 @@ financialStatementCsvReader.entries.forEach(entry => {
                 if (!registerInfo) {
                     console.error(`register info data not present for entity with registration number ${registrationNumber}`)
                 }
-                entity = new Entity(registrationNumber, registerInfo?.name ?? '', registerInfo.type)
+                entity = new Entity(registrationNumber, registerInfo.name, registerInfo.type)
                 entities.set(registrationNumber, entity)
             }
             let entityYearylyStatistics = entity.statisticsForYear(year)
@@ -99,6 +99,7 @@ incomeStatementsCsvReader.entries.forEach(entry => {
     let entityFinancialStatistics = yearlyStatisticsIds.get(entry.statement_id)
     if (entityFinancialStatistics) {
         entityFinancialStatistics.setIncome(entry)
+        entityFinancialStatistics.calculateEmployeeBasedMetrics()
         yearlyTops.checkEntry(entityFinancialStatistics)
     }
 })
@@ -109,24 +110,31 @@ await (async () => {
     taxesCsvReader.entries.forEach(entry => {
         let registrationNumber = parseInt(entry['Reģistrācijas kods'])
         let entity = entities.get(registrationNumber)
-        if (entity) {
-            let year = parseInt(entry['Taksācijas gads'])
-            let statisticsForYear = entity.statisticsForYear(year, true)
-            if (statisticsForYear) {
-                const type = entityTypeFromString(entry['Uzņēmējdarbības forma'])
-                statisticsForYear.type = type
-                statisticsForYear.nace = entry['Pamatdarbības NACE kods']
-                statisticsForYear.socialTaxes = parseNumberWithSpaces(entry['Tajā skaitā, VSAOI']) * 1000
-                statisticsForYear.incomeTaxes = parseNumberWithSpaces(entry['Tajā skaitā, IIN']) * 1000
-                const employees = parseInt(entry['Vidējais nodarbināto personu skaits, cilv.'])
-                if (statisticsForYear.employees == null) {
-                    statisticsForYear.employees = employees
-                } else if (statisticsForYear.employees != employees) {
-                    console.error(`data mismatch between UR and VID (employees) - ${statisticsForYear.employees} vs ${employees}`)
-                }
-                statisticsForYear.socialTaxesPerEmployee = statisticsForYear.socialTaxes / statisticsForYear.employees
-                statisticsForYear.incomeTaxesPerEmployee = statisticsForYear.incomeTaxes / statisticsForYear.employees
+        if (entity == null) {
+            const registerInfo = register.get(registrationNumber)
+            if (!registerInfo) {
+                console.error(`register info data not present for entity with registration number ${registrationNumber}`)
+                entity = new Entity(registrationNumber, entry['Nosaukums'], null)
+            } else {
+                entity = new Entity(registrationNumber, registerInfo.name, registerInfo.type)
             }
+            entities.set(registrationNumber, entity)
+        }
+        let year = parseInt(entry['Taksācijas gads'])
+        let statisticsForYear = entity.statisticsForYear(year, true)
+        if (statisticsForYear) {
+            const type = entityTypeFromString(entry['Uzņēmējdarbības forma'])
+            statisticsForYear.type = type
+            statisticsForYear.nace = entry['Pamatdarbības NACE kods']
+            statisticsForYear.socialTaxes = parseNumberWithSpaces(entry['Tajā skaitā, VSAOI']) * 1000
+            statisticsForYear.incomeTaxes = parseNumberWithSpaces(entry['Tajā skaitā, IIN']) * 1000
+            const employees = parseInt(entry['Vidējais nodarbināto personu skaits, cilv.'])
+            if (statisticsForYear.employees == null) {
+                statisticsForYear.employees = employees
+            } else if (statisticsForYear.employees != employees) {
+                console.error(`data mismatch between UR and VID (employees) - ${statisticsForYear.employees} vs ${employees}`)
+            }
+            statisticsForYear.calculateEmployeeBasedMetrics()
         }
     })
 })()

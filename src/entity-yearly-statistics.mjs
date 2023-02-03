@@ -1,3 +1,5 @@
+import { safeDivide } from './utilities.mjs'
+
 export class EntityYearlyStatistics {
     constructor(year, legalRegistrationNumber, name) {
         this.year = year
@@ -10,12 +12,20 @@ export class EntityYearlyStatistics {
         this.netTurnover = parseInt(income.net_turnover) * this.multiplier
         this.netIncome = parseInt(income.net_income) * this.multiplier
         this.netIncomeToTurnover = this.netIncome / this.netTurnover
-        if (this.employees) {
-            this.netTurnoverPerEmployee = this.netTurnover / this.employees
-            this.netIncomePerEmployee = this.netIncome / this.employees
-        } else {
-            this.netTurnoverPerEmployee = -Infinity
-            this.netIncomePerEmployee = -Infinity
+    }
+
+    calculateEmployeeBasedMetrics() {
+        if (this.netTurnover != null) { 
+            this.netTurnoverPerEmployee = safeDivide(this.netTurnover, this.employees)
+        }
+        if (this.netIncome != null) {
+            this.netIncomePerEmployee = safeDivide(this.netIncome, this.employees)    
+        }
+        if (this.socialTaxes != null) {
+            this.socialTaxesPerEmployee = safeDivide(this.socialTaxes, this.employees)
+        }
+        if (this.incomeTaxes != null) {
+            this.incomeTaxesPerEmployee = safeDivide(this.incomeTaxes, this.employees)
         }
     }
 

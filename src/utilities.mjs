@@ -68,3 +68,11 @@ String.prototype.smartSplit = function(separator) {
 export function parseNumberWithSpaces(text) {
     return parseFloat(text.split(/\s+/).join(''))
 }
+
+export function safeDivide(dividend, divisor) {
+    if (divisor == 0) {
+        return dividend >= 0 ? +Infinity : -Infinity
+    }
+    const result = dividend / divisor
+    return isNaN(result) ? null : result
+}
