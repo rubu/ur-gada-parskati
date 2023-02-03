@@ -7,6 +7,7 @@ import { LazyTop } from './lazy-top.mjs';
 import { YearlyTops } from './yearly-tops.mjs';
 import { open } from 'fs/promises'
 import { parseNumberWithSpaces } from './utilities.mjs'
+import { ENTITY_TYPES, entityTypeFromString  } from './entity-type.mjs'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
@@ -40,6 +41,9 @@ await (async () => {
     let registerCsvReader = new NaiveCsvReader(csvDataSources.register)
     await registerCsvReader.read()
     registerCsvReader.entries.forEach(entry => {
+        if (Object.keys(ENTITY_TYPES).indexOf(entry.type) == -1) {
+            throw new Error(`unknown entity type ${entry.type}`)
+        }
         register.set(parseInt(entry.regcode), entry)
     })
 })()
@@ -63,10 +67,11 @@ financialStatementCsvReader.entries.forEach(entry => {
                 if (!registerInfo) {
                     console.error(`register info data not present for entity with registration number ${registrationNumber}`)
                 }
-                entity = new Entity(registrationNumber, registerInfo?.name ?? '')
+                entity = new Entity(registrationNumber, registerInfo?.name ?? '', registerInfo.type)
                 entities.set(registrationNumber, entity)
             }
-            let entityYearylyStatistics = entity.statisticsForYear(year, entry.id)
+            let entityYearylyStatistics = entity.statisticsForYear(year)
+            entityYearylyStatistics.id = entry.id
             entityYearylyStatistics.employees = parseInt(entry.employees)
             let multiplier = entry.rounded_to_nearest
             if (multiplier === 'THOUSANDS') {
@@ -106,15 +111,21 @@ await (async () => {
         let entity = entities.get(registrationNumber)
         if (entity) {
             let year = parseInt(entry['Taksācijas gads'])
-            let statisticsForYear = entity.statisticsForYear(year, null, false)
+            let statisticsForYear = entity.statisticsForYear(year, true)
             if (statisticsForYear) {
+                const type = entityTypeFromString(entry['Uzņēmējdarbības forma'])
+                statisticsForYear.type = type
                 statisticsForYear.nace = entry['Pamatdarbības NACE kods']
-                statisticsForYear.socialTaxes = parseNumberWithSpaces(entry['Tajā skaitā, VSAOI'])
-                statisticsForYear.incomeTaxes = parseNumberWithSpaces(entry['Tajā skaitā, IIN'])
-                if (statisticsForYear.employees) {
-                    statisticsForYear.socialTaxesPerEmployee = statisticsForYear.socialTaxes / statisticsForYear.employees
-                    statisticsForYear.incomeTaxesPerEmployee = statisticsForYear.incomeTaxes / statisticsForYear.employees
+                statisticsForYear.socialTaxes = parseNumberWithSpaces(entry['Tajā skaitā, VSAOI']) * 1000
+                statisticsForYear.incomeTaxes = parseNumberWithSpaces(entry['Tajā skaitā, IIN']) * 1000
+                const employees = parseInt(entry['Vidējais nodarbināto personu skaits, cilv.'])
+                if (statisticsForYear.employees == null) {
+                    statisticsForYear.employees = employees
+                } else if (statisticsForYear.employees != employees) {
+                    console.error(`data mismatch between UR and VID (employees) - ${statisticsForYear.employees} vs ${employees}`)
                 }
+                statisticsForYear.socialTaxesPerEmployee = statisticsForYear.socialTaxes / statisticsForYear.employees
+                statisticsForYear.incomeTaxesPerEmployee = statisticsForYear.incomeTaxes / statisticsForYear.employees
             }
         }
     })
@@ -124,9 +135,15 @@ yearlyTops.print()
 
 if (minYear) {
     let csvSeparator = ';'
-    let fileHandle = await open(join(__dirname, '..', 'dump.csv'), 'w')
-    const entity_keys = [ 'name', 'legalRegistrationNumber']
-    const year_keys = [ 'nace',  'employees', 'netIncome',  'netIncomePerEmployee', 'netTurnover', 'netTurnoverPerEmployee', 'socialTaxes', 'socialTaxesPerEmployee', 'incomeTaxes', 'incomeTaxesPerEmployee']
+    let fileName
+    if (maxYear && maxYear > minYear) {
+        fileName = `dump_${minYear}_${maxYear}.csv`
+    } else {
+        fileName = `dump_${minYear}.csv`
+    }
+    let fileHandle = await open(join(__dirname, '..', fileName), 'w')
+    const entity_keys = [ 'name', 'legalRegistrationNumber', 'currentType']
+    const year_keys = [ 'nace', 'type', 'employees', 'netIncome',  'netIncomePerEmployee', 'netTurnover', 'netTurnoverPerEmployee', 'socialTaxes', 'socialTaxesPerEmployee', 'incomeTaxes', 'incomeTaxesPerEmployee']
     let headers = entity_keys
     for (let year = minYear; year <= maxYear; ++year) {
         headers = headers.concat(year_keys.map(key => `${key}_${year}`))
@@ -141,7 +158,10 @@ if (minYear) {
             let value = object[key]
             if (value == null) {
                 value = ''
-            } 
+            } else if (typeof(value) == 'string' && value.indexOf(csvSeparator) != -1) {
+                value.replace('"', '""')
+                value = '"' + value + '"'
+            }
             values.push(value)
         })
         return values

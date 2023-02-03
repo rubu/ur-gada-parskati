@@ -1,5 +1,6 @@
 import { open } from 'node:fs/promises'
 import { once } from 'events'
+import '../utilities.mjs'
 
 export class NaiveCsvReader {
     constructor(path, options = { separator: ';', smartSplit: true}) {

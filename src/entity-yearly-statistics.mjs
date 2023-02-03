@@ -1,7 +1,6 @@
 export class EntityYearlyStatistics {
-    constructor(year, id, legalRegistrationNumber, name) {
+    constructor(year, legalRegistrationNumber, name) {
         this.year = year
-        this.id = id
         this.legalRegistrationNumber = legalRegistrationNumber
         this.name = name
         this.multiplier = 1

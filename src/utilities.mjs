@@ -36,7 +36,8 @@ export function insertAt(array, index, value, limit) {
 String.prototype.smartSplit = function(separator) {
     let items = [], start = 0, end = undefined
     let closeQuotes = false, isEscapedQuote = false
-    for (var index = 0; index < this.length; ++index) {
+    let index = 0
+    for (; index < this.length; ++index) {
         const character = this[index]
         if (closeQuotes) {
             if (character == '"' && isEscapedQuote == false) {
@@ -60,7 +61,7 @@ String.prototype.smartSplit = function(separator) {
         }
         isEscapedQuote = false
     }
-    items.push(this.substring(start))
+    items.push(this.substring(start, end ?? index))
     return items
 }
 
