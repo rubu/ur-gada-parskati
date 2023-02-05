@@ -160,7 +160,7 @@ if (minYear) {
     }
     let fileHandle = await open(join(__dirname, '..', fileName), 'w')
     const entity_keys = [ 'name', 'legalRegistrationNumber', 'currentType']
-    const year_keys = [ 'nace', 'type', 'employees', 'netIncome',  'netIncomePerEmployee', 'netTurnover', 'netTurnoverPerEmployee', 'netIncomeToTurnover', 'socialTaxes', 'socialTaxesPerEmployee', 'incomeTaxes', 'incomeTaxesPerEmployee', 'extraDividends', 'dividendsPaid']
+    const year_keys = [ 'nace', 'type', 'employees', 'netIncome',  'netIncomePerEmployee', 'netTurnover', 'netTurnoverPerEmployee', 'netIncomeToTurnover', 'socialTaxes', 'socialTaxesPerEmployee', 'incomeTaxes', 'incomeTaxesPerEmployee', 'extraDividends', 'dividendsPaid', 'dividendsPaidAbs']
     let headers = entity_keys
     for (let year = minYear; year <= maxYear; ++year) {
         headers = headers.concat(year_keys.map(key => `${key}_${year}`))
