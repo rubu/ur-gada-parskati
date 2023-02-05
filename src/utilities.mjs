@@ -34,7 +34,7 @@ export function insertAt(array, index, value, limit) {
 }
 
 String.prototype.smartSplit = function(separator) {
-    let items = [], start = 0, end = undefined
+    let items = [], item = ''
     let closeQuotes = false, isEscapedQuote = false
     let index = 0
     for (; index < this.length; ++index) {
@@ -45,23 +45,24 @@ String.prototype.smartSplit = function(separator) {
                     isEscapedQuote = true
                     continue
                 } else {
-                    end = index
                     closeQuotes = false
                 }
+            } else {
+                item += character
             }
         } else {
             if (character == '"') {
-                start = index + 1
                 closeQuotes = true
             } else if (character == separator) {
-                items.push(this.substring(start, end ?? index))
-                start = index + 1
-                end = undefined
+                items.push(item)
+                item = ''
+            } else {
+                item += character
             }
         }
         isEscapedQuote = false
     }
-    items.push(this.substring(start, end ?? index))
+    items.push(item)
     return items
 }
 

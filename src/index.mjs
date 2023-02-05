@@ -9,6 +9,8 @@ import { open } from 'fs/promises'
 import { parseNumberWithSpaces } from './utilities.mjs'
 import { ENTITY_TYPES, entityTypeFromString  } from './entity-type.mjs'
 
+console.log(`pid: ${process.pid}`)
+
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const csvDataSourceSet = new CsvDataSourceSet(join(__dirname, '..', 'data'), [
@@ -158,7 +160,7 @@ if (minYear) {
     } else {
         fileName = `dump_${minYear}.csv`
     }
-    let fileHandle = await open(join(__dirname, '..', fileName), 'w')
+    let fileHandle = await open(join(__dirname, '..', 'dumps', fileName), 'w')
     const entity_keys = [ 'name', 'legalRegistrationNumber', 'currentType']
     const year_keys = [ 'nace', 'type', 'employees', 'netIncome',  'netIncomePerEmployee', 'netTurnover', 'netTurnoverPerEmployee', 'netIncomeToTurnover', 'socialTaxes', 'socialTaxesPerEmployee', 'incomeTaxes', 'incomeTaxesPerEmployee', 'extraDividends', 'dividendsPaid', 'dividendsPaidAbs']
     let headers = entity_keys

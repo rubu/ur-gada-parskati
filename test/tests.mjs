@@ -41,3 +41,9 @@ test('parse number with spaces', () => {
     assert.strictEqual(result, 3799.23)
 })
   
+test('splitting with smartSplit', () => {
+    const items = '"foo ""bar""";dummy'.smartSplit(';')
+    assert.deepStrictEqual(items, ['foo "bar"', 'dummy'])
+    const items2 ='"foo ""bar""";"dummy"'.smartSplit(';')
+    assert.deepStrictEqual(items2, ['foo "bar"', 'dummy'])
+})

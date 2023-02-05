@@ -10,7 +10,7 @@ What is going to happen?
 1) The script is going to download and place the needed csv files in `data` folder
 2) All the csv files will be read and aggregated by registration numbers and year
 3) Some random tops will be printed (feel free to comment that out)
-4) a `dump_{yearRange}.csv` file with the data from `startYear` to `endYear` (configured in `src/index.mjs`) will be dumped
+4) a `dump_{yearRange}.csv` file with the data from `startYear` to `endYear` (configured in `src/index.mjs`) will be dumped inside the folder `dumps`
 
 # Requirements #
 
