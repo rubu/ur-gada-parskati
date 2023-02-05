@@ -4,13 +4,13 @@ Javascript tooling that aggregated data from https://data.gov.lv/dati/lv/dataset
 
 # Usage #
 
-Just run `node src/index.js`. The code is ugly, I was frustrated how dirty the data was, but it is something.
+Just run `node --max-old-space-size=4096 src/index.mjs`. The code is ugly, I was frustrated how dirty the data was, but it is something.
 
 What is going to happen?
 1) The script is going to download and place the needed csv files in `data` folder
 2) All the csv files will be read and aggregated by registration numbers and year
 3) Some random tops will be printed (feel free to comment that out)
-4) a `dump.csv` file with the data from `startYear` to `endYear` will be dumped
+4) a `dump_{yearRange}.csv` file with the data from `startYear` to `endYear` (configured in `src/index.mjs`) will be dumped
 
 # Requirements #
 
