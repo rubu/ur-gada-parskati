@@ -12,7 +12,11 @@ export class EntityYearlyStatistics {
         this.netTurnover = parseInt(income.net_turnover) * this.multiplier
         this.netIncome = parseInt(income.net_income) * this.multiplier
         this.netIncomeToTurnover = this.netIncome / this.netTurnover
-        this.extraDividends = income.extra_dividends
+        this.extraDividends = parseInt(income.extra_dividends)
+    }
+
+    setCashFlow(cashFlow) {
+        this.dividendsPaid = parseInt(cashFlow.cff_dividends_paid)
     }
 
     calculateEmployeeBasedMetrics() {

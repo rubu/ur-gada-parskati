@@ -109,7 +109,7 @@ await cashFlowStatementsCsvReader.read()
 cashFlowStatementsCsvReader.entries.forEach(entry => {
     let entityFinancialStatistics = yearlyStatisticsIds.get(entry.statement_id)
     if (entityFinancialStatistics) {
-        entityFinancialStatistics.dividendsPaid = entry.cff_dividends_paid
+        entityFinancialStatistics.setCashFlow(entry)
     }
 })
 
