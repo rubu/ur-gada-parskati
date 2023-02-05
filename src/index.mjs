@@ -13,7 +13,7 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const csvDataSourceSet = new CsvDataSourceSet(join(__dirname, '..', 'data'), [
     //{ name: 'balanceSheets', url: 'https://data.gov.lv/dati/dataset/8d31b878-536a-44aa-a013-8bc6b669d477/resource/50ef4f26-f410-4007-b296-22043ca3dc43/download/balance_sheets.csv'},
-    //{ name: 'cashFlowStatements', url: 'https://data.gov.lv/dati/dataset/8d31b878-536a-44aa-a013-8bc6b669d477/resource/1a11fc29-ba7c-4e5a-8edc-7a28cea24988/download/cash_flow_statements.csv'},
+    { name: 'cashFlowStatements', url: 'https://data.gov.lv/dati/dataset/8d31b878-536a-44aa-a013-8bc6b669d477/resource/1a11fc29-ba7c-4e5a-8edc-7a28cea24988/download/cash_flow_statements.csv'},
     { name: 'financialStatements', url: 'https://data.gov.lv/dati/dataset/8d31b878-536a-44aa-a013-8bc6b669d477/resource/27fcc5ec-c63b-4bfd-bb08-01f073a52d04/download/financial_statements.csv' },
     { name: 'incomeStatements', url: 'https://data.gov.lv/dati/dataset/8d31b878-536a-44aa-a013-8bc6b669d477/resource/d5fd17ef-d32e-40cb-8399-82b780095af0/download/income_statements.csv'},
     { name: 'register', url: 'https://data.gov.lv/dati/dataset/4de9697f-850b-45ec-8bba-61fa09ce932f/resource/25e80bf3-f107-4ab4-89ef-251b5b9374e9/download/register.csv' },
@@ -104,6 +104,15 @@ incomeStatementsCsvReader.entries.forEach(entry => {
     }
 })
 
+let cashFlowStatementsCsvReader = new NaiveCsvReader(csvDataSources.cashFlowStatements)
+await cashFlowStatementsCsvReader.read()
+cashFlowStatementsCsvReader.entries.forEach(entry => {
+    let entityFinancialStatistics = yearlyStatisticsIds.get(entry.statement_id)
+    if (entityFinancialStatistics) {
+        entityFinancialStatistics.dividendsPaid = entry.cff_dividends_paid
+    }
+})
+
 await (async () => {
     let taxesCsvReader = new NaiveCsvReader(csvDataSources.taxes, { separator: ',', smartSplit: true})
     await taxesCsvReader.read()
@@ -151,7 +160,7 @@ if (minYear) {
     }
     let fileHandle = await open(join(__dirname, '..', fileName), 'w')
     const entity_keys = [ 'name', 'legalRegistrationNumber', 'currentType']
-    const year_keys = [ 'nace', 'type', 'employees', 'netIncome',  'netIncomePerEmployee', 'netTurnover', 'netTurnoverPerEmployee', 'socialTaxes', 'socialTaxesPerEmployee', 'incomeTaxes', 'incomeTaxesPerEmployee']
+    const year_keys = [ 'nace', 'type', 'employees', 'netIncome',  'netIncomePerEmployee', 'netTurnover', 'netTurnoverPerEmployee', 'netIncomeToTurnover', 'socialTaxes', 'socialTaxesPerEmployee', 'incomeTaxes', 'incomeTaxesPerEmployee', 'extraDividends', 'dividendsPaid']
     let headers = entity_keys
     for (let year = minYear; year <= maxYear; ++year) {
         headers = headers.concat(year_keys.map(key => `${key}_${year}`))
