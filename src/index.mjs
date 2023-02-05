@@ -175,7 +175,7 @@ if (minYear) {
             let value = object[key]
             if (value == null) {
                 value = ''
-            } else if (typeof(value) == 'string' && value.indexOf(csvSeparator) != -1) {
+            } else if (typeof(value) == 'string') {
                 value.replace('"', '""')
                 value = '"' + value + '"'
             }
