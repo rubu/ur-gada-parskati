@@ -161,11 +161,37 @@ if (minYear) {
         fileName = `dump_${minYear}.csv`
     }
     let fileHandle = await open(join(__dirname, '..', 'dumps', fileName), 'w')
+    const getKeyLabel = (key) => {
+        const keyLabels = {
+            'name': 'Nosaukums',
+            'legalRegistrationNumber': 'Reģistrācijas numurs',
+            'currentType': 'Pašreizējā forma',
+            'nace': 'NACE kods',
+            'type': 'Forma',
+            'employees': 'Darbineki',
+            'netIncome': 'Ienākumi',
+            'netIncomePerEmployee': 'Ienākumi uz darbinieku',
+            'netTurnover': 'Apgrozījums',
+            'netTurnoverPerEmployee': 'Apgrozījums uz darbinieku',
+            'netIncomeToTurnover': 'Ienākumi pret apgrozījumu',
+            'socialTaxes': 'VSAOI iemaksas',
+            'socialTaxesPerEmployee': 'VSAOI iemaksas uz darbinieku',
+            'incomeTaxes': 'IIN iemaksas',
+            'incomeTaxesPerEmployee': 'IIN iemaksas uz darbinieku',
+            'extraDividends': 'Ārkārtas dividendes',
+            'dividendsPaid': 'Dividendes (kā norādīts UGP)',
+            'dividendsPaidAbs': 'Dividendes'
+        }
+        if (key in keyLabels) {
+            return keyLabels[key]
+        }
+        throw new Error(`key ${key} does not have a label`)
+    }
     const entity_keys = [ 'name', 'legalRegistrationNumber', 'currentType']
-    const year_keys = [ 'nace', 'type', 'employees', 'netIncome',  'netIncomePerEmployee', 'netTurnover', 'netTurnoverPerEmployee', 'netIncomeToTurnover', 'socialTaxes', 'socialTaxesPerEmployee', 'incomeTaxes', 'incomeTaxesPerEmployee', 'extraDividends', 'dividendsPaid', 'dividendsPaidAbs']
-    let headers = entity_keys
+    const year_keys = [ 'nace', 'type', 'employees', 'netIncome',  'netIncomePerEmployee', 'netTurnover', 'netTurnoverPerEmployee', 'netIncomeToTurnover', 'socialTaxes', 'socialTaxesPerEmployee', 'incomeTaxes', 'incomeTaxesPerEmployee', 'extraDividends', 'dividendsPaidAbs', 'dividendsPaid']
+    let headers = entity_keys.map(key => getKeyLabel(key))
     for (let year = minYear; year <= maxYear; ++year) {
-        headers = headers.concat(year_keys.map(key => `${key}_${year}`))
+        headers = headers.concat(year_keys.map(key => `${getKeyLabel(key)} (${year})`))
     }
     let header = headers.join(csvSeparator)
     await fileHandle.write(header + '\n')
