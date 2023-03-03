@@ -68,9 +68,10 @@ financialStatementCsvReader.entries.forEach(entry => {
                 const registerInfo = register.get(registrationNumber)
                 if (!registerInfo) {
                     console.error(`register info data not present for entity with registration number ${registrationNumber}`)
+                } else {
+                    entity = new Entity(registrationNumber, registerInfo.name, registerInfo.type)
+                    entities.set(registrationNumber, entity)
                 }
-                entity = new Entity(registrationNumber, registerInfo.name, registerInfo.type)
-                entities.set(registrationNumber, entity)
             }
             let entityYearylyStatistics = entity.statisticsForYear(year)
             entityYearylyStatistics.id = entry.id
@@ -124,7 +125,7 @@ await (async () => {
         if (entity == null) {
             const registerInfo = register.get(registrationNumber)
             if (!registerInfo) {
-                console.error(`register info data not present for entity with registration number ${registrationNumber}`)
+                console.warn(`register info data not present for entity with registration number ${registrationNumber} ${entry['Nosaukums']}, using name from tax report`)
                 entity = new Entity(registrationNumber, entry['Nosaukums'], null)
             } else {
                 entity = new Entity(registrationNumber, registerInfo.name, registerInfo.type)
