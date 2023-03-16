@@ -2,6 +2,10 @@
 
 Javascript tooling that aggregated data from https://data.gov.lv/dati/lv/dataset/gada-parskatu-finansu-dati and generates different kinds of top lists per various metrics
 
+# Initial setup #
+
+Clone this repo and do `npm install` in the project dir.
+
 # Usage #
 
 Just run `node --max-old-space-size=4096 src/index.mjs`. The code is ugly, I was frustrated how dirty the data was, but it is something.
