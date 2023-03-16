@@ -77,3 +77,12 @@ export function safeDivide(dividend, divisor) {
     const result = dividend / divisor
     return isNaN(result) ? null : result
 }
+
+export function getShortName(name) {
+    for (let i = name.length - 1; i >= 0; i--) {
+        if (name[i] == ',') {
+            return name.substring(0, i)
+        }
+    }
+    return name
+}

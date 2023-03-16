@@ -5,5 +5,8 @@
   "scripts": {
     "lint": "eslint src  --ext .mjs",
     "test": "node --test"
+  },
+  "dependencies": {
+    "read-excel-file": "^5.6.1"
   }
 }

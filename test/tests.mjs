@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert'
 
-import { binarySearch, insertAt, parseNumberWithSpaces } from '../src/utilities.mjs'
+import { binarySearch, insertAt, parseNumberWithSpaces, getShortName } from '../src/utilities.mjs'
 
 test('binary search with result', () => {
     let array = [1, 2, 3, 4, 5, 6]
@@ -46,4 +46,9 @@ test('splitting with smartSplit', () => {
     assert.deepStrictEqual(items, ['foo "bar"', 'dummy'])
     const items2 ='"foo ""bar""";"dummy"'.smartSplit(';')
     assert.deepStrictEqual(items2, ['foo "bar"', 'dummy'])
+})
+
+test('splitting with smartSplit', () => {
+    const shortName = getShortName('Ausmas Balodes ģimenes ārsta doktorāts, Sabiedrība ar ierobežotu atbildību')
+    assert.deepStrictEqual(shortName, 'Ausmas Balodes ģimenes ārsta doktorāts')
 })
