@@ -99,7 +99,7 @@ async function processFamilyDoctors(year, dataSourceFilePath, csvSeparator) {
         }
     }
     console.log(`There are ${unmappedFamilyDoctorsPracticeNames.size} (${unmappedFamilyDoctorsPracticeNames.size * 100.0 / familyDoctorsPracticeNames.size}%) unmapped family doctors practices out of ${familyDoctorsPracticeNames.size} for year ${year}`)
-    await writeFile(`unmapped-family-doctors-pracice-names-${year}.json`, JSON.stringify(Array.from(unmappedFamilyDoctorsPracticeNames.keys())))
+    await writeFile(`unmapped-family-doctors-practice-names-${year}.json`, JSON.stringify(Array.from(unmappedFamilyDoctorsPracticeNames.keys())))
 
     const filePath = join(__dirname, '..', 'dumps', `dump_family_doctors_${year}.csv`)
     let fileHandle = await open(filePath, 'w')
