@@ -151,7 +151,7 @@ const dataSources = await dataSourceSet.load()
 let entities = new Map()
 let yearlyStatisticsIds = new Map()
 
-const startYear = 2021, endYear = 2021
+const startYear = 2022, endYear = 2022
 let minYear, maxYear
 
 let register = new Map()
@@ -239,7 +239,11 @@ await (async () => {
     let taxesCsvReader = new NaiveCsvReader(dataSources.taxes, { separator: ',', smartSplit: true})
     await taxesCsvReader.read()
     taxesCsvReader.entries.forEach(entry => {
-        let registrationNumber = parseInt(entry['Reģistrācijas kods'])
+        const registrationNumber = parseInt(entry['Reģistrācijas kods'])
+        const year = parseInt(entry['Taksācijas gads'])
+        if (year < minYear || year > maxYear) {
+            return
+        }
         let entity = entities.get(registrationNumber)
         if (entity == null) {
             const registerInfo = register.get(registrationNumber)
@@ -251,7 +255,6 @@ await (async () => {
             }
             entities.set(registrationNumber, entity)
         }
-        let year = parseInt(entry['Taksācijas gads'])
         let statisticsForYear = entity.statisticsForYear(year, true)
         if (statisticsForYear) {
             const type = entityTypeFromString(entry['Uzņēmējdarbības forma'])
