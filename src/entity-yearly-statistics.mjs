@@ -35,6 +35,19 @@ export class EntityYearlyStatistics {
         }
     }
 
+    setTaxData(taxData) {
+        this.type = taxData.type
+        this.nace = taxData.nace
+        this.socialTaxes = taxData.socialTaxes
+        this.incomeTaxes = taxData.incomeTaxes
+        if (this.employees == null) {
+            this.employees = taxData.employees
+        } else if (this.employees != taxData.employees) {
+            console.error(`data mismatch between UR and VID (employees) - ${this.employees} vs ${taxData.employees}`)
+        }
+        this.calculateEmployeeBasedMetrics()
+
+    }
     description() {
         return '{' + Object.keys(this).map(key => `${key}: ${this[key]}`).join(', ') + '}'
     }

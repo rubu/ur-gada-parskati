@@ -13,6 +13,7 @@ import { FamilyDoctorsPractice  } from './family-doctors-practice.mjs'
 import { FamilyDoctor } from './family-doctor.mjs'
 import { createReadStream } from 'fs'
 import { writeFile } from 'fs/promises'
+import { XlsxTaxDataReader } from './xlsx/xlsx-tax-data-reader.mjs'
 
 function getKeyLabel(key) {
     const keyLabels = {
@@ -236,6 +237,7 @@ cashFlowStatementsCsvReader.entries.forEach(entry => {
 })
 
 await (async () => {
+    // take evertyhing we have from the csv
     let taxesCsvReader = new NaiveCsvReader(dataSources.taxes, { separator: ',', smartSplit: true})
     await taxesCsvReader.read()
     taxesCsvReader.entries.forEach(entry => {
@@ -257,20 +259,39 @@ await (async () => {
         }
         let statisticsForYear = entity.statisticsForYear(year, true)
         if (statisticsForYear) {
-            const type = entityTypeFromString(entry['Uzņēmējdarbības forma'])
-            statisticsForYear.type = type
-            statisticsForYear.nace = entry['Pamatdarbības NACE kods']
-            statisticsForYear.socialTaxes = parseNumberWithSpaces(entry['Tajā skaitā, VSAOI']) * 1000
-            statisticsForYear.incomeTaxes = parseNumberWithSpaces(entry['Tajā skaitā, IIN']) * 1000
-            const employees = parseInt(entry['Vidējais nodarbināto personu skaits, cilv.'])
-            if (statisticsForYear.employees == null) {
-                statisticsForYear.employees = employees
-            } else if (statisticsForYear.employees != employees) {
-                console.error(`data mismatch between UR and VID (employees) - ${statisticsForYear.employees} vs ${employees}`)
-            }
-            statisticsForYear.calculateEmployeeBasedMetrics()
+            statisticsForYear.setTaxData({
+                type: entityTypeFromString(entry['Uzņēmējdarbības forma']),
+                nace: entry['Pamatdarbības NACE kods'],
+                socialTaxes: parseNumberWithSpaces(entry['Tajā skaitā, VSAOI']) * 1000,
+                incomeTaxes: parseNumberWithSpaces(entry['Tajā skaitā, IIN']) * 1000,
+                employees: parseInt(entry['Vidējais nodarbināto personu skaits, cilv.'])
+            })
         }
     })
+    if (minYear >= 2022) {
+        const taxes2022 = await XlsxTaxDataReader.create(join('data', 'komersanti_un_PVN_grupas_2022.xlsx'))
+        taxes2022.entries.forEach(entry => {
+            const registrationNumber = entry.registrationNumber
+            let entity = entities.get(registrationNumber)
+            if (entity == null) {
+                const registerInfo = register.get(registrationNumber)
+                if (!registerInfo) {
+                    console.warn(`register info data not present for entity with registration number ${registrationNumber} ${entry.name}, using name from tax report`)
+                    entity = new Entity(registrationNumber, entry.name, null)
+                } else {
+                    entity = new Entity(registrationNumber, registerInfo.name, registerInfo.type)
+                }
+                entities.set(registrationNumber, entity)
+            }
+            let statisticsForYear = entity.statisticsForYear(2022, true)
+            if (statisticsForYear) {
+                let adjustedEntry = Object.assign({}, entry)
+                adjustedEntry.socialTaxes *= 1000
+                adjustedEntry.incomeStatements *= 1000
+                statisticsForYear.setTaxData(adjustedEntry)
+            }
+        })
+    }
 })()
 
 yearlyTops.print()
